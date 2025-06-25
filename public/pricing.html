@@ -1774,6 +1774,13 @@
                       {
                         amount: {
                           value: amount.toFixed(2),
+                          currency_code: "GBP",
+                          breakdown: {
+                            item_total: {
+                              currency_code: "GBP",
+                              value: amount.toFixed(2),
+                            },
+                          },
                         },
                         description: `${bookingDetails.serviceType} - ${bookingDetails.houseSize}`,
                       },
@@ -1882,125 +1889,122 @@
 
     <script>
       function initializePayPalButton() {
-        // Function to get the current price based on room size
-        function getRoomBasedPrice() {
-          const roomSize =
-            document.querySelector('select[name="regularRoomSize"]')?.value ||
-            document.querySelector('select[name="oneOffRoomSize"]')?.value ||
-            "1-2";
-
-          // Set the price based on the number of rooms (matching Stripe pricing)
-          let amount = 50.0; // £50.00 (1-2 rooms)
-          if (roomSize === "3-4") {
-            amount = 100.0; // £100.00
-          } else if (roomSize === "5+") {
-            amount = 150.0; // £150.00
-          }
-          return amount;
+        // Get the room size from the form
+        function getSelectedRoomSize() {
+          const activeForm =
+            document.getElementById("oneOffSection").style.display === "block"
+              ? "oneOff"
+              : "regular";
+          const roomSizeSelect = document.getElementById(
+            `${activeForm}RoomSize`
+          );
+          return roomSizeSelect ? roomSizeSelect.value : null;
         }
 
-        // Initial price setup
-        let amount = getRoomBasedPrice();
-
-        // Update the displayed price
-        const updateDisplayedPrice = () => {
-          amount = getRoomBasedPrice();
-          const priceElement = document.getElementById("totalPrice");
-          if (priceElement) {
-            priceElement.textContent = `£${amount.toFixed(2)}`;
+        // Calculate price based on room size
+        function calculatePrice() {
+          const roomSize = getSelectedRoomSize();
+          switch (roomSize) {
+            case "1-2":
+              return "50.00";
+            case "3-4":
+              return "100.00";
+            case "5+":
+              return "150.00";
+            default:
+              return "0.00";
           }
-          return amount;
-        };
+        }
 
-        // Update price when room size changes
-        const roomSizeSelectors = [
-          document.querySelector('select[name="regularRoomSize"]'),
-          document.querySelector('select[name="oneOffRoomSize"]'),
-        ].filter(Boolean);
+        // Update PayPal button when room size changes
+        function updatePayPalButton() {
+          const roomSize = getSelectedRoomSize();
+          const price = calculatePrice();
 
-        roomSizeSelectors.forEach((selector) => {
-          selector.addEventListener("change", updateDisplayedPrice);
-        });
+          // Only enable PayPal button if a room size is selected
+          if (roomSize) {
+            document.getElementById("paypal-button-container").style.display =
+              "block";
+            document.getElementById("paypal-button-container").innerHTML = "";
 
-        // Initialize with current price
-        updateDisplayedPrice();
-
-        paypal
-          .Buttons({
-            style: {
-              layout: "vertical",
-              color: "gold",
-              shape: "rect",
-              label: "paypal",
-            },
-            createOrder: function (data, actions) {
-              // Get the current selected service type and room size
-              const serviceType =
-                document.getElementById("oneOffSection").style.display ===
-                "block"
-                  ? "one-off"
-                  : "regular";
-              const roomSize = document.getElementById("oneOffRoomSize")?.value;
-
-              // Default amount if no room size is selected
-              let amount = "0.00";
-
-              // If it's one-off cleaning and room size is selected, use the paypal price
-              if (serviceType === "one-off" && roomSize) {
-                const priceInfo = priceData["one-off"][roomSize];
-                if (priceInfo && priceInfo.paypal) {
-                  amount = priceInfo.paypal.toFixed(2);
-                }
-              }
-
-              return actions.order.create({
-                purchase_units: [
-                  {
-                    amount: {
-                      value: selectedPrice,
-                      breakdown: {
-                        item_total: {
-                          currency_code: "GBP",
-                          value: selectedPrice,
-                        },
-                      },
-                    },
-                    items: [
+            paypal
+              .Buttons({
+                createOrder: function (data, actions) {
+                  return actions.order.create({
+                    purchase_units: [
                       {
-                        name: `Cleaning (${selectedPrice} GBP)`,
-                        description: "Cleaning service for your home",
-                        quantity: "1",
-                        unit_amount: {
+                        amount: {
+                          value: price,
                           currency_code: "GBP",
-                          value: selectedPrice,
+                          breakdown: {
+                            item_total: {
+                              value: price,
+                              currency_code: "GBP",
+                            },
+                          },
                         },
-                        category: "SERVICE",
+                        items: [
+                          {
+                            name: `Cleaning Service (${roomSize} rooms)`,
+                            description: `Professional cleaning for ${roomSize} rooms`,
+                            quantity: "1",
+                            unit_amount: {
+                              value: price,
+                              currency_code: "GBP",
+                            },
+                            category: "DIGITAL_GOODS",
+                          },
+                        ],
                       },
                     ],
-                  },
-                ],
-              });
-            },
-            onApprove: function (data, actions) {
-              return actions.order.capture().then(function (details) {
-                alert(
-                  "Payment completed successfully! Transaction ID: " +
-                    details.id
-                );
-                console.log(details);
-              });
-            },
-            onError: function (err) {
-              console.error("PayPal Error:", err);
-              alert(
-                "An error occurred with PayPal. Please try again or choose another payment method."
-              );
-            },
-          })
-          .render("#paypal-button-container");
-      }
-    </script>
+                  });
+                },
+                onApprove: function (data, actions) {
+                  return actions.order.capture().then(function (details) {
+                    alert(
+                      "Payment completed by " + details.payer.name.given_name
+                    );
+                    // Here you can add code to submit the form after successful payment
+                    const formId =
+                      document.getElementById("oneOffSection").style.display ===
+                      "block"
+                        ? "oneOffForm"
+                        : "regularForm";
+                    document.getElementById(formId).submit();
+                  });
+                },
+              })
+              .render("#paypal-button-container");
+          } else {
+            document.getElementById("paypal-button-container").style.display =
+              "none";
+          }
+        }
 
+        // Add event listeners to room size selectors
+        document
+          .getElementById("oneOffRoomSize")
+          ?.addEventListener("change", updatePayPalButton);
+        document
+          .getElementById("regularRoomSize")
+          ?.addEventListener("change", updatePayPalButton);
+
+        // Initialize the button
+        updatePayPalButton();
+      }
+
+      // Initialize PayPal button when the page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        // Other existing code...
+
+        // Initialize PayPal button
+        if (typeof paypal !== "undefined") {
+          initializePayPalButton();
+        } else {
+          console.error("PayPal SDK not loaded");
+        }
+      });
+    </script>
     <!-- Footer Start -->
     <div
       class="container-fluid footer bg-footer py-5 wow fadeIn"
