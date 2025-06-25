@@ -40,6 +40,8 @@
         color: #393838;
       }
     </style>
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=ASNGhKzEe51oF20pg75Uv28jRFOZD1kKmpWS35DsKL9tJBM2BjLJ1XnfmJNjASOFNYQA6jDqMvM5BV0r&currency=GBP"></script>
   </head>
 
   <body>
@@ -757,6 +759,35 @@
 
     <!-- Add this JavaScript to handle the service toggling -->
     <script>
+      function getBookingDetails() {
+        const isOneOff =
+          document.getElementById("oneOffSection").style.display !== "none";
+        const form = isOneOff
+          ? document.getElementById("oneOffForm")
+          : document.getElementById("regularForm");
+
+        const formData = new FormData(form);
+        const data = {};
+
+        // Convert FormData to object
+        for (let [key, value] of formData.entries()) {
+          data[key] = value;
+        }
+
+        // Get additional data from the UI
+        data.serviceType = isOneOff ? "One-Off" : "Regular";
+        data.houseSize =
+          form.querySelector("select[name$='RoomSize']")?.value || "";
+        data.cleaningType =
+          form.querySelector("select[name$='CleaningType']")?.value || "";
+        data.frequency =
+          form.querySelector("select[name='frequency']")?.value || "";
+        data.totalPrice =
+          document.getElementById("totalPrice")?.textContent || "";
+
+        return data;
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         const oneOffBtn = document.getElementById("oneOffBtn");
         const regularBtn = document.getElementById("regularBtn");
@@ -896,7 +927,7 @@
           .addEventListener("change", updatePrice);
 
         // Get booking details from forms
-        function getBookingDetails() {
+        function getBookingDetailsFromForm() {
           const serviceType =
             oneOffSection.style.display === "block" ? "one-off" : "regular";
           const roomSize =
@@ -1290,7 +1321,27 @@
               button.disabled = true;
             }
 
-            // Get the booking details
+            // Get the selected number of rooms
+            const roomSize =
+              document.querySelector('input[name="roomSize"]:checked')?.value ||
+              document.querySelector('select[name="roomSize"]')?.value ||
+              "1-2";
+
+            // Set the price based on the number of rooms (in pence for Stripe)
+            let amount = 5000; // £50.00 in pence (1-2 rooms)
+            if (roomSize === "3-4") {
+              amount = 10000; // £100.00 in pence
+            } else if (roomSize === "5+") {
+              amount = 15000; // £150.00 in pence
+            }
+
+            // Update the displayed price
+            const priceElement = document.getElementById("totalPrice");
+            if (priceElement) {
+              priceElement.textContent = `£${(amount / 100).toFixed(2)}`;
+            }
+
+            // Rest of your existing code...
             const serviceType =
               document.getElementById("serviceType").textContent;
             const isOneOff = serviceType === "One-Off";
@@ -1324,13 +1375,9 @@
               serviceType: serviceType,
               houseSize: document.getElementById("houseSize").textContent,
               priceRange: document.getElementById("priceRange").textContent,
-              totalPrice: document.getElementById("totalPrice").textContent,
-
-              // Customer details
+              totalPrice: `£${(amount / 100).toFixed(2)}`,
               customerName:
-                document.querySelector('[name="fullName"]')?.value ||
-                nameElement?.value ||
-                "",
+                document.querySelector('[name="fullName"]')?.value || "",
               customerEmail: emailElement ? emailElement.value : "",
               customerPhone: phoneElement ? phoneElement.value : "",
               alternatePhone: alternatePhoneElement
@@ -1343,14 +1390,10 @@
                 document.querySelector('[name="country"]')?.value ||
                 CountryElement?.value ||
                 "",
-
-              // One-off specific fields
               oneOffDate:
                 isOneOff && oneOffDateElement ? oneOffDateElement.value : "",
               oneOffTime:
                 isOneOff && oneOffTimeElement ? oneOffTimeElement.value : "",
-
-              // Common notes
               notes: isOneOff
                 ? oneOffNotesElement
                   ? oneOffNotesElement.value
@@ -1358,8 +1401,6 @@
                 : regularNotesElement
                 ? regularNotesElement.value
                 : "",
-
-              // Regular specific fields
               cleaningFrequency:
                 !isOneOff && regularFrequencyElement
                   ? regularFrequencyElement.value
@@ -1389,24 +1430,15 @@
             if (oneOffDate) urlParams.set("oneOffDate", oneOffDate);
             if (oneOffTime) urlParams.set("oneOffTime", oneOffTime);
 
-            // Log the URL parameters for debugging
-            console.log(
-              "URL Parameters:",
-              Object.fromEntries(urlParams.entries())
-            );
-
             // Create payment intent data with success URL containing all parameters
             const paymentIntentData = {
-              amount: Math.round(
-                parseFloat(bookingDetails.totalPrice.replace(/[^0-9.]/g, "")) *
-                  100
-              ),
+              amount: amount, // Use the calculated amount in pence
               currency: "gbp",
               metadata: {
                 serviceType: bookingDetails.serviceType,
                 houseSize: bookingDetails.houseSize,
                 priceRange: bookingDetails.priceRange,
-                totalPrice: bookingDetails.totalPrice,
+                totalPrice: `£${(amount / 100).toFixed(2)}`,
                 customerName: bookingDetails.customerName || "",
                 customerEmail: bookingDetails.customerEmail || "",
                 customerPhone: bookingDetails.customerPhone || "",
@@ -1607,30 +1639,95 @@
               button.disabled = false;
             }
           }
-        } else {
-          // Handle other payment methods (PayPal, etc.)
-          alert(`Processing ${paymentMethod} payment...`);
-          // Close the modal
-          const paymentModal = bootstrap.Modal.getInstance(
-            document.getElementById("paymentModal")
-          );
-          paymentModal.hide();
+        } else if (paymentMethod === "paypal") {
+          try {
+            const bookingDetails = getBookingDetails();
+            const amount = parseFloat(
+              bookingDetails.totalPrice.replace(/[^0-9.]/g, "")
+            );
+
+            // Render PayPal button
+            paypal
+              .Buttons({
+                createOrder: function (data, actions) {
+                  return actions.order.create({
+                    purchase_units: [
+                      {
+                        amount: {
+                          value: amount.toFixed(2),
+                          breakdown: {
+                            item_total: {
+                              value: amount.toFixed(2),
+                              currency_code: "GBP",
+                            },
+                          },
+                        },
+                        items: [
+                          {
+                            name: `${bookingDetails.serviceType} Cleaning - ${bookingDetails.houseSize}`,
+                            description: `Cleaning service for ${bookingDetails.houseSize} house`,
+                            quantity: 1,
+                            unit_amount: {
+                              value: amount.toFixed(2),
+                              currency_code: "GBP",
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  });
+                },
+                onApprove: function (data, actions) {
+                  return actions.order.capture().then(function (details) {
+                    // Redirect to success page with booking details
+                    const urlParams = new URLSearchParams();
+                    Object.entries(bookingDetails).forEach(([key, value]) => {
+                      if (value) urlParams.append(key, value);
+                    });
+
+                    // Add PayPal transaction details
+                    urlParams.append("paymentMethod", "PayPal");
+                    urlParams.append("transactionId", details.id);
+                    urlParams.append("paymentStatus", "completed");
+
+                    // Close the payment modal
+                    const paymentModal = bootstrap.Modal.getInstance(
+                      document.getElementById("paymentModal")
+                    );
+                    paymentModal.hide();
+
+                    // Redirect to success page
+                    window.location.href = `/payment-success.html?${urlParams.toString()}`;
+                  });
+                },
+                onError: function (err) {
+                  console.error("PayPal error:", err);
+                  alert(
+                    "There was an error processing your PayPal payment. Please try again."
+                  );
+                },
+              })
+              .render("#paypal-button-container");
+          } catch (error) {
+            console.error("Error processing PayPal payment:", error);
+            alert("Error processing payment: " + error.message);
+          }
         }
       }
     </script>
 
     <style>
       .payment-option {
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
       }
       .payment-option:hover {
-        transform: scale(1.05);
-      }
-      .payment-img {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 10px;
-        background: white;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
     </style>
 
@@ -1657,21 +1754,37 @@
           </div>
           <div class="modal-body text-center">
             <p class="mb-4">Please choose your preferred payment method:</p>
-            <div class="d-flex justify-content-center gap-4">
-              <div class="payment-option" onclick="processPayment('paypal')">
-                <img
-                  src="img/paypal.png"
-                  alt="PayPal"
-                  class="img-fluid payment-img"
-                  style="width: 180px; cursor: pointer"
-                />
+            <div class="d-flex justify-content-center align-items-center gap-4">
+              <!-- PayPal Button with square border -->
+              <div
+                class="payment-option"
+                style="
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                  padding: 34px 110px;
+                  width: 200px;
+                "
+              >
+                <div id="paypal-button-container"></div>
               </div>
-              <div class="payment-option" onclick="processPayment('stripe')">
+
+              <!-- Stripe Button -->
+              <div
+                class="payment-option"
+                onclick="processPayment('stripe')"
+                style="
+                  cursor: pointer;
+                  border: 1px solid #ddd;
+                  border-radius: 4px;
+                  padding: 31px;
+                  width: 200px;
+                "
+              >
                 <img
                   src="img/stripe.png"
                   alt="Stripe"
-                  class="img-fluid payment-img"
-                  style="width: 150px; cursor: pointer"
+                  class="img-fluid"
+                  style="max-width: 120px"
                 />
               </div>
             </div>
@@ -1679,6 +1792,65 @@
         </div>
       </div>
     </div>
+
+    <script>
+      function initializePayPalButton() {
+        // Get the selected number of rooms
+        const roomSize =
+          document.querySelector('input[name="roomSize"]:checked')?.value ||
+          document.querySelector('select[name="roomSize"]')?.value ||
+          "1-2";
+
+        // Set the price based on the number of rooms
+        let amount = 50.0; // Default to 1-2 rooms
+        if (roomSize === "3-4") {
+          amount = 100.0;
+        } else if (roomSize === "5+") {
+          amount = 150.0;
+        }
+
+        // Update the displayed price
+        const priceElement = document.getElementById("totalPrice");
+        if (priceElement) {
+          priceElement.textContent = `£${amount.toFixed(2)}`;
+        }
+
+        paypal
+          .Buttons({
+            style: {
+              layout: "vertical",
+              color: "gold",
+              shape: "rect",
+              label: "paypal",
+            },
+            createOrder: function (data, actions) {
+              return actions.order.create({
+                purchase_units: [
+                  {
+                    amount: {
+                      value: amount.toFixed(2),
+                      currency_code: "GBP",
+                    },
+                  },
+                ],
+              });
+            },
+            onApprove: function (data, actions) {
+              return actions.order.capture().then(function (details) {
+                // Redirect to success page with payment details
+                window.location.href = `/payment-success.html?paymentMethod=PayPal&amount=${amount}&status=completed`;
+              });
+            },
+            onError: function (err) {
+              console.error("PayPal error:", err);
+              alert(
+                "There was an error processing your PayPal payment. Please try again."
+              );
+            },
+          })
+          .render("#paypal-button-container");
+      }
+    </script>
 
     <!-- Footer Start -->
     <div
@@ -1954,11 +2126,9 @@
         if (regularFrequencyEl)
           regularFrequencyEl.addEventListener("change", updatePrice);
 
-        function getBookingDetails() {
+        function getBookingDetailsFromForm() {
           const serviceType =
-            oneOffSection && oneOffSection.style.display === "block"
-              ? "one-off"
-              : "regular";
+            oneOffSection.style.display === "block" ? "one-off" : "regular";
           const roomSize =
             serviceType === "one-off"
               ? oneOffRoomSizeEl?.value
@@ -2130,5 +2300,31 @@
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=ASNGhKzEe51oF20pg75Uv28jRFOZD1kKmpWS35DsKL9tJBM2BjLJ1XnfmJNjASOFNYQA6jDqMvM5BV0r&currency=GBP"></script>
+    <script>
+      paypal
+        .Buttons({
+          createOrder: function (data, actions) {
+            return actions.order.create({
+              purchase_units: [
+                {
+                  amount: {
+                    value: "10.00",
+                  },
+                },
+              ],
+            });
+          },
+          onApprove: function (data, actions) {
+            return actions.order.capture().then(function (details) {
+              alert(
+                "Transaction completed by " + details.payer.name.given_name
+              );
+              console.log(details);
+            });
+          },
+        })
+        .render("#paypal-button-container");
+    </script>
   </body>
 </html>
