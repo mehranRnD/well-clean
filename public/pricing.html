@@ -228,6 +228,7 @@
                           <select
                             class="form-select"
                             id="oneOffRoomSize"
+                            name="roomSize"
                             required
                           >
                             <option value="">Select size</option>
@@ -244,6 +245,7 @@
                             type="date"
                             class="form-control"
                             id="oneOffDate"
+                            name="oneOffDate"
                             required
                           />
                         </div>
@@ -255,21 +257,22 @@
                             type="time"
                             class="form-control"
                             id="oneOffTime"
+                            name="oneOffTime"
                             required
                           />
                         </div>
                         <h5 class="mt-4 mb-3">Contact Information</h5>
                         <div class="row">
                           <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label"
+                            <label for="fullName" class="form-label"
                               >Full Name *</label
                             >
-                            <input
-                              type="text"
+                            <textarea
                               class="form-control"
-                              id="name"
-                              required
-                            />
+                              id="fullName"
+                              name="fullName"
+                              rows="1"
+                            ></textarea>
                           </div>
                           <div class="col-md-6 mb-3">
                             <label for="email" class="form-label"
@@ -340,13 +343,14 @@
                             />
                           </div>
                           <div class="col-md-4 mb-3">
-                            <label for="county" class="form-label"
-                              >County *</label
+                            <label for="country" class="form-label"
+                              >Country *</label
                             >
                             <input
                               type="text"
                               class="form-control"
-                              id="county"
+                              name="country"
+                              id="country"
                               required
                             />
                           </div>
@@ -357,6 +361,7 @@
                           >
                           <textarea
                             class="form-control"
+                            name="oneOffNotes"
                             id="oneOffNotes"
                             rows="3"
                           ></textarea>
@@ -391,6 +396,7 @@
                           >
                           <select
                             class="form-select"
+                            name="regularRoomSize"
                             id="regularRoomSize"
                             required
                           >
@@ -406,6 +412,7 @@
                           >
                           <select
                             class="form-select"
+                            name="regularFrequency"
                             id="regularFrequency"
                             required
                           >
@@ -421,6 +428,7 @@
                           <input
                             type="date"
                             class="form-control"
+                            name="regularDate"
                             id="regularDate"
                             required
                           />
@@ -434,6 +442,7 @@
                             <input
                               type="text"
                               class="form-control"
+                              name="name"
                               id="name"
                               required
                             />
@@ -445,6 +454,7 @@
                             <input
                               type="email"
                               class="form-control"
+                              name="email"
                               id="email"
                               required
                             />
@@ -458,6 +468,7 @@
                             <input
                               type="tel"
                               class="form-control"
+                              name="phone"
                               id="phone"
                               required
                             />
@@ -469,6 +480,7 @@
                             <input
                               type="tel"
                               class="form-control"
+                              name="alternatePhone"
                               id="alternatePhone"
                             />
                           </div>
@@ -480,6 +492,7 @@
                           >
                           <textarea
                             class="form-control"
+                            name="address"
                             id="address"
                             rows="2"
                             required
@@ -493,6 +506,7 @@
                             <input
                               type="text"
                               class="form-control"
+                              name="postcode"
                               id="postcode"
                               required
                             />
@@ -502,18 +516,20 @@
                             <input
                               type="text"
                               class="form-control"
+                              name="city"
                               id="city"
                               required
                             />
                           </div>
                           <div class="col-md-4 mb-3">
-                            <label for="county" class="form-label"
-                              >County *</label
+                            <label for="country" class="form-label"
+                              >Country *</label
                             >
                             <input
                               type="text"
                               class="form-control"
-                              id="county"
+                              name="country"
+                              id="country"
                               required
                             />
                           </div>
@@ -524,6 +540,7 @@
                           >
                           <textarea
                             class="form-control"
+                            name="regularNotes"
                             id="regularNotes"
                             rows="3"
                             required
@@ -534,8 +551,7 @@
                             type="button"
                             class="btn btn-primary px-4 py-2"
                             id="bookNowBtn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#paymentMethodModal"
+                            onclick="validateAndSubmit('regularForm')"
                           >
                             <i class="fas fa-calendar-check me-2"></i>Book Now
                           </button>
@@ -903,7 +919,6 @@
               ? document.getElementById("oneOffNotes").value
               : document.getElementById("regularNotes").value;
 
-          // Convert room size to human-readable format
           const houseSize =
             {
               "1-2": "1-2 Rooms",
@@ -911,7 +926,20 @@
               "5+": "5+ Rooms",
             }[roomSize] || "Unknown";
 
+          const customerDetails = {
+            fullName: document.getElementById("fullName")?.value || "",
+            email: document.getElementById("email")?.value || "",
+            phone: document.getElementById("phone")?.value || "",
+            address: document.getElementById("address")?.value || "",
+            postcode: document.getElementById("postcode")?.value || "",
+            city: document.getElementById("city")?.value || "",
+            country: document.getElementById("Country")?.value || "",
+            preferredDate: date || "",
+            preferredTime: time || "",
+          };
+
           return {
+            ...customerDetails,
             serviceType,
             houseSize,
             date,
@@ -929,29 +957,9 @@
             const bookingDetails = getBookingDetails();
             // console.log("Booking Details:", bookingDetails);
 
-            // Get customer details
-            const customerDetails = {
-              fullName: document.getElementById("name")?.value || "",
-              email: document.getElementById("email")?.value || "",
-              phone: document.getElementById("phone")?.value || "",
-              alternatePhone:
-                document.getElementById("alternatePhone")?.value || "",
-              address: document.getElementById("address")?.value || "",
-              postcode: document.getElementById("postcode")?.value || "",
-              city: document.getElementById("city")?.value || "",
-              county: document.getElementById("county")?.value || "",
-              preferredTime:
-                document.getElementById("preferredTime")?.value || "",
-              additionalNotes:
-                document.getElementById("oneOffNotes")?.value || "",
-            };
-
-            // console.log("Customer Details:", customerDetails);
-
             // Combine all data
             const bookingData = {
               ...bookingDetails,
-              ...customerDetails,
               timestamp: new Date().toLocaleString("en-GB", {
                 year: "numeric",
                 month: "long",
@@ -977,7 +985,7 @@
               ${bookingData.address}
               Postcode: ${bookingData.postcode}
               City: ${bookingData.city}
-              County: ${bookingData.county}
+              Country: ${bookingData.country}
               
               *Service Details:*
               Service Type: ${bookingData.serviceType}
@@ -989,7 +997,7 @@
               }
               
               *Additional Notes:*
-              ${bookingData.additionalNotes}
+              ${bookingData.notes}
               
               Status: ${bookingData.status}
               Timestamp: ${bookingData.timestamp}
@@ -1030,15 +1038,15 @@
 
             // Get customer details
             const customerDetails = {
-              fullName: document.getElementById("name")?.value || "",
+              fullName: document.getElementById("fullName")?.value || "",
               email: document.getElementById("email")?.value || "",
               phone: document.getElementById("phone")?.value || "",
-              alternatePhone:
-                document.getElementById("alternatePhone")?.value || "",
               address: document.getElementById("address")?.value || "",
               postcode: document.getElementById("postcode")?.value || "",
               city: document.getElementById("city")?.value || "",
-              county: document.getElementById("county")?.value || "",
+              country: document.getElementById("Country")?.value || "",
+              preferredDate:
+                document.getElementById("preferredDate")?.value || "",
               preferredTime:
                 document.getElementById("preferredTime")?.value || "",
               additionalNotes:
@@ -1076,7 +1084,7 @@
               ${bookingData.address}
               Postcode: ${bookingData.postcode}
               City: ${bookingData.city}
-              County: ${bookingData.county}
+              Country: ${bookingData.country}
               
               *Service Details:*
               Service Type: ${bookingData.serviceType}
@@ -1088,7 +1096,7 @@
               }
               
               *Additional Notes:*
-              ${bookingData.additionalNotes}
+              ${bookingData.notes}
               
               Status: ${bookingData.status}
               Timestamp: ${bookingData.timestamp}
@@ -1167,6 +1175,84 @@
         });
 
         if (isValid) {
+          // Log form data to console
+          console.group("📋 Form Submission Data");
+          console.log("🏠 Cleaning Details:");
+          console.log(
+            "  • Size of House:",
+            form.querySelector('[name="roomSize"]')?.value || "Not selected"
+          );
+          console.log(
+            "  • Preferred Date:",
+            form.querySelector('[name="oneOffDate"]')?.value || "Not selected"
+          );
+          console.log(
+            "  • Preferred Time:",
+            form.querySelector('[name="oneOffTime"]')?.value || "Not selected"
+          );
+
+          console.log("\n👤 Contact Information:");
+          console.log(
+            "  • Full Name:",
+            form.querySelector('[name="fullName"]')?.value ||
+              document.getElementById("fullName")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • Email:",
+            form.querySelector('[name="email"]')?.value ||
+              document.getElementById("email")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • Phone:",
+            form.querySelector('[name="phone"]')?.value ||
+              document.getElementById("phone")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • Alternate Phone:",
+            form.querySelector('[name="alternatePhone"]')?.value ||
+              document.getElementById("alternatePhone")?.value ||
+              "Not provided"
+          );
+
+          console.log("\n🏠 Address Information:");
+          console.log(
+            "  • Address:",
+            form.querySelector('[name="address"]')?.value ||
+              document.getElementById("address")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • Postcode:",
+            form.querySelector('[name="postcode"]')?.value ||
+              document.getElementById("postcode")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • City:",
+            form.querySelector('[name="city"]')?.value ||
+              document.getElementById("city")?.value ||
+              "Not provided"
+          );
+          console.log(
+            "  • Country:",
+            form.querySelector('[name="country"]')?.value ||
+              document.getElementById("country")?.value ||
+              "Not provided"
+          );
+
+          console.log("\n📝 Special Instructions:");
+          console.log(
+            "  ",
+            form.querySelector('[name="oneOffNotes"]')?.value ||
+              document.getElementById("oneOffNotes")?.value ||
+              "None provided"
+          );
+
+          console.groupEnd();
+
           // Show payment modal if form is valid
           const paymentModal = new bootstrap.Modal(
             document.getElementById("paymentModal")
@@ -1183,6 +1269,9 @@
               window.pendingFormData[element.id] = element.value;
             }
           }
+
+          // Also log the pending form data for debugging
+          console.log("Pending Form Data:", window.pendingFormData);
         }
       }
 
@@ -1202,27 +1291,141 @@
             }
 
             // Get the booking details
+            const serviceType =
+              document.getElementById("serviceType").textContent;
+            const isOneOff = serviceType === "One-Off";
+
+            // Get common form elements
+            const nameElement = document.getElementById("name");
+            const emailElement = document.getElementById("email");
+            const phoneElement = document.getElementById("phone");
+            const addressElement = document.getElementById("address");
+            const postcodeElement = document.getElementById("postcode");
+            const cityElement = document.getElementById("city");
+            const CountryElement = document.getElementById("Country");
+            const alternatePhoneElement =
+              document.getElementById("alternatePhone");
+            const preferredDateElement =
+              document.getElementById("preferredDate");
+            const preferredTimeElement =
+              document.getElementById("preferredTime");
+
+            // Get service-specific elements
+            const oneOffDateElement = document.getElementById("oneOffDate");
+            const oneOffTimeElement = document.getElementById("oneOffTime");
+            const oneOffNotesElement = document.getElementById("oneOffNotes");
+            const regularFrequencyElement =
+              document.getElementById("cleaningFrequency");
+            const regularTimeElement = document.getElementById("preferredTime");
+            const regularDateElement = document.getElementById("regularDate");
+            const regularNotesElement = document.getElementById("regularNotes");
+
             const bookingDetails = {
-              serviceType: document.getElementById("serviceType").textContent,
+              serviceType: serviceType,
               houseSize: document.getElementById("houseSize").textContent,
               priceRange: document.getElementById("priceRange").textContent,
               totalPrice: document.getElementById("totalPrice").textContent,
-              customerName: document.getElementById("name")?.value || "",
-              customerEmail: document.getElementById("email")?.value || "",
-              customerPhone: document.getElementById("phone")?.value || "",
-              serviceDate: document.getElementById("oneOffDate")?.value || "",
-              serviceTime: document.getElementById("oneOffTime")?.value || "",
-              address: document.getElementById("address")?.value || "",
-              postcode: document.getElementById("postcode")?.value || "",
-              city: document.getElementById("city")?.value || "",
-              notes: document.getElementById("oneOffNotes")?.value || "",
+
+              // Customer details
+              customerName:
+                document.querySelector('[name="fullName"]')?.value ||
+                nameElement?.value ||
+                "",
+              customerEmail: emailElement ? emailElement.value : "",
+              customerPhone: phoneElement ? phoneElement.value : "",
+              alternatePhone: alternatePhoneElement
+                ? alternatePhoneElement.value
+                : "",
+              address: addressElement ? addressElement.value : "",
+              postcode: postcodeElement ? postcodeElement.value : "",
+              city: cityElement ? cityElement.value : "",
+              country:
+                document.querySelector('[name="country"]')?.value ||
+                CountryElement?.value ||
+                "",
+
+              // One-off specific fields
+              oneOffDate:
+                isOneOff && oneOffDateElement ? oneOffDateElement.value : "",
+              oneOffTime:
+                isOneOff && oneOffTimeElement ? oneOffTimeElement.value : "",
+
+              // Common notes
+              notes: isOneOff
+                ? oneOffNotesElement
+                  ? oneOffNotesElement.value
+                  : ""
+                : regularNotesElement
+                ? regularNotesElement.value
+                : "",
+
+              // Regular specific fields
+              cleaningFrequency:
+                !isOneOff && regularFrequencyElement
+                  ? regularFrequencyElement.value
+                  : "",
+              preferredTime:
+                !isOneOff && regularTimeElement ? regularTimeElement.value : "",
+              preferredDate:
+                !isOneOff && regularDateElement ? regularDateElement.value : "",
             };
 
             // Convert booking details to URL parameters
             const urlParams = new URLSearchParams();
+
+            // Add all booking details to URL parameters
             Object.entries(bookingDetails).forEach(([key, value]) => {
               if (value) urlParams.append(key, value);
             });
+
+            // Explicitly add oneOffDate and oneOffTime from the form
+            const oneOffDate = document.querySelector(
+              '[name="oneOffDate"]'
+            )?.value;
+            const oneOffTime = document.querySelector(
+              '[name="oneOffTime"]'
+            )?.value;
+
+            if (oneOffDate) urlParams.set("oneOffDate", oneOffDate);
+            if (oneOffTime) urlParams.set("oneOffTime", oneOffTime);
+
+            // Log the URL parameters for debugging
+            console.log(
+              "URL Parameters:",
+              Object.fromEntries(urlParams.entries())
+            );
+
+            // Create payment intent data with success URL containing all parameters
+            const paymentIntentData = {
+              amount: Math.round(
+                parseFloat(bookingDetails.totalPrice.replace(/[^0-9.]/g, "")) *
+                  100
+              ),
+              currency: "gbp",
+              metadata: {
+                serviceType: bookingDetails.serviceType,
+                houseSize: bookingDetails.houseSize,
+                priceRange: bookingDetails.priceRange,
+                totalPrice: bookingDetails.totalPrice,
+                customerName: bookingDetails.customerName || "",
+                customerEmail: bookingDetails.customerEmail || "",
+                customerPhone: bookingDetails.customerPhone || "",
+                address: bookingDetails.address || "",
+                postcode: bookingDetails.postcode || "",
+                city: bookingDetails.city || "",
+                country: bookingDetails.country || "",
+                notes: bookingDetails.notes || "",
+                oneOffDate: oneOffDate || "",
+                oneOffTime: oneOffTime || "",
+                cleaningFrequency: bookingDetails.cleaningFrequency || "",
+                preferredTime: bookingDetails.preferredTime || "",
+                preferredDate: bookingDetails.preferredDate || "",
+              },
+              success_url: `${
+                window.location.origin
+              }/payment-success.html?${urlParams.toString()}`,
+              cancel_url: `${window.location.origin}/pricing.html`,
+            };
 
             // Create a payment intent on your server
             const response = await fetch("/create-payment-intent", {
@@ -1230,29 +1433,7 @@
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                amount: Math.round(
-                  parseFloat(
-                    bookingDetails.totalPrice.replace(/[^0-9.]/g, "")
-                  ) * 100
-                ),
-                currency: "gbp",
-                metadata: {
-                  serviceType: bookingDetails.serviceType,
-                  houseSize: bookingDetails.houseSize,
-                  priceRange: bookingDetails.priceRange,
-                  totalPrice: bookingDetails.totalPrice,
-                  customerName: bookingDetails.customerName || "",
-                  customerEmail: bookingDetails.customerEmail || "",
-                  customerPhone: bookingDetails.customerPhone || "",
-                  serviceDate: bookingDetails.serviceDate || "",
-                  serviceTime: bookingDetails.serviceTime || "",
-                  address: bookingDetails.address || "",
-                  postcode: bookingDetails.postcode || "",
-                  city: bookingDetails.city || "",
-                  notes: bookingDetails.notes || "",
-                },
-              }),
+              body: JSON.stringify(paymentIntentData),
             });
 
             if (!response.ok) {
@@ -1663,6 +1844,7 @@
             oneOffSection && oneOffSection.style.display === "block"
               ? "one-off"
               : "regular";
+
           const roomSize =
             serviceType === "one-off"
               ? oneOffRoomSizeEl?.value
@@ -1801,7 +1983,26 @@
               "5+": "5+ Rooms",
             }[roomSize] || "Unknown";
 
-          return { serviceType, houseSize, date, time, notes };
+          const customerDetails = {
+            fullName: document.getElementById("fullName")?.value || "",
+            email: document.getElementById("email")?.value || "",
+            phone: document.getElementById("phone")?.value || "",
+            address: document.getElementById("address")?.value || "",
+            postcode: document.getElementById("postcode")?.value || "",
+            city: document.getElementById("city")?.value || "",
+            country: document.getElementById("Country")?.value || "",
+            preferredDate: date || "",
+            preferredTime: time || "",
+          };
+
+          return {
+            ...customerDetails,
+            serviceType,
+            houseSize,
+            date,
+            time,
+            notes,
+          };
         }
 
         if (oneOffForm) {
@@ -1833,7 +2034,7 @@
               address: document.getElementById("address")?.value || "",
               postcode: document.getElementById("postcode")?.value || "",
               city: document.getElementById("city")?.value || "",
-              county: document.getElementById("county")?.value || "",
+              Country: document.getElementById("Country")?.value || "",
               preferredTime:
                 document.getElementById("preferredTime")?.value || "",
               additionalNotes:
@@ -1871,7 +2072,7 @@
           ${bookingData.address}
           Postcode: ${bookingData.postcode}
           City: ${bookingData.city}
-          County: ${bookingData.county}
+          Country: ${bookingData.country}
 
           *Service Details:*
           Service Type: ${bookingData.serviceType}
@@ -1883,7 +2084,7 @@
           }
 
           *Additional Notes:*
-          ${bookingData.additionalNotes}
+          ${bookingData.notes}
 
           Status: ${bookingData.status}
           Timestamp: ${bookingData.timestamp}

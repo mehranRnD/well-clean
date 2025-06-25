@@ -11,6 +11,19 @@ console.log(
 );
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+// Initialize PayPal
+const paypal = require("@paypal/checkout-server-sdk");
+
+// Set up PayPal environment
+const Environment =
+  process.env.NODE_ENV === "production"
+    ? paypal.core.LiveEnvironment
+    : paypal.core.SandboxEnvironment;
+
+const paypalClient = new paypal.core.PayPalHttpClient(
+  new Environment(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_SECRET_KEY)
+);
+
 // Import routes
 const indexRouter = require("./routes/routes");
 
@@ -56,6 +69,74 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 });
 
+// Create PayPal order
+app.post("/api/paypal/create-order", async (req, res) => {
+  try {
+    const { amount, currency = "GBP", metadata = {} } = req.body;
+
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer("return=representation");
+
+    request.requestBody({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: currency,
+            value: amount.toString(),
+            breakdown: {
+              item_total: {
+                currency_code: currency,
+                value: amount.toString(),
+              },
+            },
+          },
+          items: [
+            {
+              name: metadata.serviceType || "Cleaning Service",
+              description: `House Size: ${metadata.houseSize || "N/A"}`,
+              quantity: "1",
+              unit_amount: {
+                currency_code: currency,
+                value: amount.toString(),
+              },
+            },
+          ],
+        },
+      ],
+      application_context: {
+        brand_name: "Well Clean",
+        shipping_preference: "NO_SHIPPING",
+        user_action: "PAY_NOW",
+        return_url: `${req.headers.origin}/payment-success`,
+        cancel_url: `${req.headers.origin}/pricing`,
+      },
+    });
+
+    const order = await paypalClient.execute(request);
+    res.json({ id: order.result.id });
+  } catch (error) {
+    console.error("PayPal create order error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Capture PayPal order
+app.post("/api/paypal/capture-order", async (req, res) => {
+  try {
+    const { orderID } = req.body;
+
+    const request = new paypal.orders.OrdersCaptureRequest(orderID);
+    request.requestBody({});
+
+    const capture = await paypalClient.execute(request);
+    res.json(capture.result);
+  } catch (error) {
+    console.error("PayPal capture error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Payment success page
 app.get("/payment-success", (req, res) => {
   const queryParams = new URLSearchParams(req.query).toString();
@@ -82,10 +163,12 @@ app.get("/get-stripe-key", (req, res) => {
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
   });
 });
+
 // Add this before your 404 handler
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
 // Routes
 app.get("/pricing", (req, res) => {
   res.render("pricing", {
@@ -118,5 +201,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
 // For Vercel deployment
 module.exports = app;

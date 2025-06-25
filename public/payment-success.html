@@ -12,6 +12,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="img/favicon-32x32.png" />
     <style>
       body {
         background-color: #f8f9fa;
@@ -20,7 +22,7 @@
       .success-container {
         max-width: 800px;
         margin: 50px auto;
-        padding: 40px;
+        padding: 25px;
         background: white;
         border-radius: 10px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -28,7 +30,6 @@
       .success-icon {
         font-size: 60px;
         color: #28a745;
-        margin-bottom: 20px;
         text-align: center;
       }
       .btn-whatsapp {
@@ -137,22 +138,24 @@
     <!-- Hidden receipt container -->
     <div id="receiptContainer"></div>
 
-    <div class="container">
-      <div class="success-container">
+    <div class="container" >
+      <div class="success-container" style="border: 1px solid #ccc">
         <div class="text-center mb-4">
           <div class="d-flex justify-content-center align-items-center mb-3">
             <img
               src="img/testing-logo-2.png"
               alt="Well Clean Logo"
               class="img-fluid me-3"
-              style="max-height: 60px"
+              style="max-height: 75px"
             />
-            <div class="success-icon" style="font-size: 40px; margin: 0">
+          </div>
+          <div class="d-flex justify-content-center align-items-center mb-3">
+            <h2 class="mb-0 me-2">Payment Successful!</h2>
+            <div class="success-icon" style="font-size: 40px; color: #28a745">
               <i class="fas fa-check-circle"></i>
             </div>
           </div>
-          <h2 class="mb-3">Payment Successful!</h2>
-          <p class="lead">Thank you for booking with Well Clean.</p>
+          <p class="lead text-center">Thank you for booking with Well Clean.</p>
         </div>
         <div class="payment-confirmed">
           <i class="fas fa-check-circle me-2"></i> Payment Confirmed
@@ -168,7 +171,8 @@
         <div class="text-center">
           <p class="mb-4">
             Our team will contact you shortly to confirm your cleaning
-            appointment details. For any questions, feel free to reach out to us
+            appointment details. <br>
+            For any questions, feel free to reach out to us
             on WhatsApp.
           </p>
 
@@ -205,104 +209,62 @@
 
       // Format booking details for display
       function formatBookingDetails(details) {
-        const formattedDetails = [];
-        const ignoreFields = [
-          "payment_intent",
-          "payment_intent_client_secret",
-          "redirect_status",
-        ];
+        const isOneOff = details.serviceType === "One-Off";
+        let html = `
+          <div class="detail-item">
+            <div class="detail-label">Service Type</div>
+            <div class="detail-value">${details.serviceType || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">House Size</div>
+            <div class="detail-value">${details.houseSize || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Price Range</div>
+            <div class="detail-value">${details.priceRange || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Amount</div>
+            <div class="detail-value">${details.totalPrice || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Customer Name</div>
+            <div class="detail-value">${details.customerName || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Email</div>
+            <div class="detail-value">${details.customerEmail || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Phone</div>
+            <div class="detail-value">${details.customerPhone || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Address</div>
+            <div class="detail-value">${details.address || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Postcode</div>
+            <div class="detail-value">${details.postcode || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">City</div>
+            <div class="detail-value">${details.city || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Country</div>
+            <div class="detail-value">${details.country || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Preferred Date</div>
+            <div class="detail-value">${details.oneOffDate || "N/A"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Preferred Time</div>
+            <div class="detail-value">${details.oneOffTime || "N/A"}</div>
+          </div>`;
 
-        // Add service details
-        if (details.serviceType) {
-          formattedDetails.push({
-            label: "Service Type",
-            value: details.serviceType || "N/A",
-          });
-        }
-
-        if (details.houseSize) {
-          formattedDetails.push({
-            label: "House Size",
-            value: details.houseSize || "N/A",
-          });
-        }
-
-        if (details.totalPrice) {
-          formattedDetails.push({
-            label: "Amount Paid",
-            value: details.totalPrice || "N/A",
-          });
-        }
-
-        // Add customer details
-        if (details.customerName) {
-          formattedDetails.push({
-            label: "Name",
-            value: details.customerName || "N/A",
-          });
-        }
-
-        if (details.customerEmail) {
-          formattedDetails.push({
-            label: "Email",
-            value: details.customerEmail || "N/A",
-          });
-        }
-
-        if (details.customerPhone) {
-          formattedDetails.push({
-            label: "Phone",
-            value: details.customerPhone || "N/A",
-          });
-        }
-
-        // Add service date and time if available
-        if (details.serviceDate) {
-          formattedDetails.push({
-            label: "Service Date",
-            value: details.serviceDate || "N/A",
-          });
-        }
-
-        if (details.serviceTime) {
-          formattedDetails.push({
-            label: "Service Time",
-            value: details.serviceTime || "N/A",
-          });
-        }
-
-        // Add address details
-        if (details.address) {
-          formattedDetails.push({
-            label: "Address",
-            value: details.address || "N/A",
-          });
-        }
-
-        if (details.city) {
-          formattedDetails.push({
-            label: "City",
-            value: details.city || "N/A",
-          });
-        }
-
-        if (details.postcode) {
-          formattedDetails.push({
-            label: "Postcode",
-            value: details.postcode || "N/A",
-          });
-        }
-
-        // Add any additional notes
-        if (details.notes) {
-          formattedDetails.push({
-            label: "Additional Notes",
-            value: details.notes || "N/A",
-            fullWidth: true,
-          });
-        }
-
-        return formattedDetails;
+        return html;
       }
 
       // Generate WhatsApp message
@@ -376,17 +338,8 @@
         const receiptDetails = document.getElementById("receiptDetails");
         const formattedDetails = formatBookingDetails(bookingDetails);
 
-        if (formattedDetails.length > 0) {
-          receiptDetails.innerHTML = formattedDetails
-            .map(
-              (detail) => `
-                <div class="detail-item">
-                  <div class="detail-label">${detail.label}:</div>
-                  <div class="detail-value">${detail.value}</div>
-                </div>
-              `
-            )
-            .join("");
+        if (formattedDetails) {
+          receiptDetails.innerHTML = formattedDetails;
         }
 
         return container;
@@ -444,17 +397,8 @@
         // Display booking details
         const formattedDetails = formatBookingDetails(bookingDetails);
 
-        if (formattedDetails.length > 0) {
-          detailsContainer.innerHTML = formattedDetails
-            .map(
-              (detail) => `
-            <div class="detail-item">
-              <div class="detail-label">${detail.label}:</div>
-              <div class="detail-value">${detail.value}</div>
-            </div>
-          `
-            )
-            .join("");
+        if (formattedDetails) {
+          detailsContainer.innerHTML = formattedDetails;
         } else {
           detailsContainer.innerHTML = "<p>No booking details available.</p>";
         }
