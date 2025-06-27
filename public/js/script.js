@@ -24,36 +24,48 @@ document.addEventListener("DOMContentLoaded", function () {
     const getValue = (id) =>
       document.getElementById(id)?.value.trim() || "Not provided";
 
-    const name = getValue("estimateName");
-    const phone = getValue("estimatePhone");
-    const email = getValue("estimateEmail");
-    const serviceType = getValue("estimateService");
-    const rawDateTime = getValue("estimateDate");
-    const propertyType = getValue("estimatePropertyType");
-    const rooms = getValue("estimateRooms");
-    const requests = getValue("estimateRequests");
+    const businessName = getValue("businessName");
+    const contactPerson = getValue("contactPerson");
+    const email = getValue("emailAddress");
+    const phone = getValue("phoneNumber");
+    const businessAddress = getValue("businessAddress");
+    const premisesType = getValue("premisesType");
+    const approxSize = getValue("approxSize");
+    const numRooms = getValue("numRooms");
+    const cleaningFrequency = getValue("cleaningFrequency");
+    const preferredDateTime = getValue("preferredDateTime");
+    const servicesRequired = getValue("servicesRequired");
+    const freeSiteVisit = getValue("freeSiteVisit");
+    const additionalNotes = getValue("additionalNotes");
 
     // Format Date & Time
     let formattedDate = "Not provided";
     let formattedTime = "Not provided";
-    if (rawDateTime !== "Not provided") {
-      const [datePart, timePart] = rawDateTime.split("T");
+    if (preferredDateTime !== "Not provided") {
+      const [datePart, timePart] = preferredDateTime.split("T");
       formattedDate = datePart;
-      formattedTime = timePart;
+      formattedTime = timePart.substring(0, 5); // Get only hours and minutes
     }
 
     // Encode WhatsApp message
-    const encodedMessage = encodeURIComponent(
-      `*New Free Estimate Request!* 📌\n\n` +
-        `👤 *Name:* ${name}\n` +
-        `📞 *Phone:* ${phone}\n` +
-        `📧 *Email:* ${email}\n\n` +
-        `🛠 *Service Type:* ${serviceType}\n` +
-        `🏠 *Property Type:* ${propertyType}\n` +
-        `📅 *Preferred Date:* ${formattedDate} 🕒 *Time:* ${formattedTime}\n` +
-        `🏡 *Number of Rooms:* ${rooms}\n\n` +
-        `📩 *Special Requests:* ${requests}`
-    );
+    const message =
+      `*New Commercial Cleaning Enquiry* 📋\n\n` +
+      `🏢 *Business Name:* ${businessName}\n` +
+      `👤 *Contact Person:* ${contactPerson}\n` +
+      `📞 *Phone:* ${phone}\n` +
+      `📧 *Email:* ${email}\n\n` +
+      `📍 *Business Address:* ${businessAddress}\n` +
+      `🏢 *Type of Premises:* ${premisesType}\n` +
+      `📏 *Approx. Size:* ${approxSize}\n` +
+      `🚪 *Number of Rooms/Areas:* ${numRooms}\n\n` +
+      `🧹 *Services Required:* ${servicesRequired}\n` +
+      `🔄 *Cleaning Frequency:* ${cleaningFrequency}\n` +
+      `📅 *Preferred Date:* ${formattedDate}\n` +
+      `⏰ *Preferred Time:* ${formattedTime}\n` +
+      `🏡 *Free Site Visit:* ${freeSiteVisit}\n\n` +
+      `📝 *Additional Notes:*\n${additionalNotes}`;
+
+    const encodedMessage = encodeURIComponent(message);
 
     // Open WhatsApp chat
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
@@ -186,36 +198,48 @@ document.addEventListener("DOMContentLoaded", function () {
       const getValue = (id) =>
         document.getElementById(id)?.value.trim() || "Not provided";
 
-      const name = getValue("estimateName");
-      const phone = getValue("estimatePhone");
-      const email = getValue("estimateEmail");
-      const serviceType = getValue("estimateService");
-      const rawDateTime = getValue("estimateDate");
-      const propertyType = getValue("estimatePropertyType");
-      const rooms = getValue("estimateRooms");
-      const requests = getValue("estimateRequests");
+      const businessName = getValue("businessName");
+      const contactPerson = getValue("contactPerson");
+      const email = getValue("emailAddress");
+      const phone = getValue("phoneNumber");
+      const businessAddress = getValue("businessAddress");
+      const premisesType = getValue("premisesType");
+      const approxSize = getValue("approxSize");
+      const numRooms = getValue("numRooms");
+      const cleaningFrequency = getValue("cleaningFrequency");
+      const preferredDateTime = getValue("preferredDateTime");
+      const servicesRequired = getValue("servicesRequired");
+      const freeSiteVisit = getValue("freeSiteVisit");
+      const additionalNotes = getValue("additionalNotes");
 
       // Format Date & Time
       let formattedDate = "Not provided";
       let formattedTime = "Not provided";
-      if (rawDateTime !== "Not provided") {
-        const [datePart, timePart] = rawDateTime.split("T");
+      if (preferredDateTime !== "Not provided") {
+        const [datePart, timePart] = preferredDateTime.split("T");
         formattedDate = datePart;
-        formattedTime = timePart;
+        formattedTime = timePart.substring(0, 5); // Get only hours and minutes
       }
 
       // Encode WhatsApp message
-      const encodedMessage = encodeURIComponent(
-        `*New Free Estimate Request!* 📌\n\n` +
-          `👤 *Name:* ${name}\n` +
-          `📞 *Phone:* ${phone}\n` +
-          `📧 *Email:* ${email}\n\n` +
-          `🛠 *Service Type:* ${serviceType}\n` +
-          `🏠 *Property Type:* ${propertyType}\n` +
-          `📅 *Preferred Date:* ${formattedDate} 🕒 *Time:* ${formattedTime}\n` +
-          `🏡 *Number of Rooms:* ${rooms}\n\n` +
-          `📩 *Special Requests:* ${requests}`
-      );
+      const message =
+        `*New Commercial Cleaning Enquiry* 📋\n\n` +
+        `🏢 *Business Name:* ${businessName}\n` +
+        `👤 *Contact Person:* ${contactPerson}\n` +
+        `📞 *Phone:* ${phone}\n` +
+        `📧 *Email:* ${email}\n\n` +
+        `📍 *Business Address:* ${businessAddress}\n` +
+        `🏢 *Type of Premises:* ${premisesType}\n` +
+        `📏 *Approx. Size:* ${approxSize}\n` +
+        `🚪 *Number of Rooms/Areas:* ${numRooms}\n\n` +
+        `🧹 *Services Required:* ${servicesRequired}\n` +
+        `🔄 *Cleaning Frequency:* ${cleaningFrequency}\n` +
+        `📅 *Preferred Date:* ${formattedDate}\n` +
+        `⏰ *Preferred Time:* ${formattedTime}\n` +
+        `🏡 *Free Site Visit:* ${freeSiteVisit}\n\n` +
+        `📝 *Additional Notes:*\n${additionalNotes}`;
+
+      const encodedMessage = encodeURIComponent(message);
 
       // Open WhatsApp chat
       const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;

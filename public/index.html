@@ -444,27 +444,29 @@
           <div class="modal-body">
             <form id="estimateForm">
               <div class="row">
-                <!-- Full Name -->
+                <!-- Business Name -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimateName" class="form-label">Business Name</label>
+                  <label for="businessName" class="form-label"
+                    >Business Name</label
+                  >
                   <input
                     type="text"
                     class="form-control"
-                    id="estimateName"
+                    id="businessName"
                     placeholder="Enter your business name"
                     required
                   />
                 </div>
 
-                <!-- Phone Number -->
+                <!-- Contact Person -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimatePhone" class="form-label"
+                  <label for="contactPerson" class="form-label"
                     >Contact Person</label
                   >
                   <input
-                    type="tel"
+                    type="text"
                     class="form-control"
-                    id="estimatePhone"
+                    id="contactPerson"
                     placeholder="Your contact person"
                     required
                   />
@@ -472,28 +474,28 @@
               </div>
 
               <div class="row">
-                <!-- Email -->
+                <!-- Email Address -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimateEmail" class="form-label"
+                  <label for="emailAddress" class="form-label"
                     >Email Address</label
                   >
                   <input
                     type="email"
                     class="form-control"
-                    id="estimateEmail"
+                    id="emailAddress"
                     placeholder="Your email"
                   />
                 </div>
 
                 <!-- Phone Number -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimatePhone" class="form-label"
+                  <label for="phoneNumber" class="form-label"
                     >Phone Number</label
                   >
                   <input
                     type="tel"
                     class="form-control"
-                    id="estimatePhone"
+                    id="phoneNumber"
                     placeholder="Your phone number"
                     required
                   />
@@ -501,29 +503,25 @@
               </div>
 
               <div class="row">
-                <!-- Email -->
+                <!-- Business Address -->
                 <div class="col-md-6 mb-3">
                   <label for="businessAddress" class="form-label"
                     >Business Address</label
                   >
                   <input
-                    type="email"
+                    type="text"
                     class="form-control"
-                    id="estimateEmail"
+                    id="businessAddress"
                     placeholder="Your postcode"
                   />
                 </div>
 
-                <!-- Property Type -->
+                <!-- Type of Premises -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimatePropertyType" class="form-label"
+                  <label for="premisesType" class="form-label"
                     >Type of Premises</label
                   >
-                  <select
-                    class="form-select"
-                    id="estimatePropertyType"
-                    required
-                  >
+                  <select class="form-select" id="premisesType" required>
                     <option value="" disabled selected>
                       Choose property type
                     </option>
@@ -539,45 +537,41 @@
               </div>
 
               <div class="row">
-                <!-- Size -->
+                <!-- Approximate Size -->
                 <div class="col-md-6 mb-3">
-                  <label for="businessAddress" class="form-label"
+                  <label for="approxSize" class="form-label"
                     >Approximate Size of Premises</label
                   >
                   <input
-                    type="email"
+                    type="text"
                     class="form-control"
-                    id="estimateEmail"
+                    id="approxSize"
                     placeholder="Your (sq ft or sq m)"
                   />
                 </div>
+
+                <!-- Number of Rooms -->
                 <div class="col-md-6 mb-3">
-                  <label for="businessAddress" class="form-label"
+                  <label for="numRooms" class="form-label"
                     >Number of Rooms / Areas to be Cleaned</label
                   >
                   <input
-                    type="email"
+                    type="text"
                     class="form-control"
-                    id="estimateEmail"
+                    id="numRooms"
                     placeholder="Your number of rooms"
                   />
                 </div>
               </div>
 
               <div class="row">
-                <!-- Property Type -->
+                <!-- Cleaning Frequency -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimatePropertyType" class="form-label"
+                  <label for="cleaningFrequency" class="form-label"
                     >How Often Do You Require Cleaning?</label
                   >
-                  <select
-                    class="form-select"
-                    id="estimatePropertyType"
-                    required
-                  >
-                    <option value="" disabled selected>
-                      Choose how often
-                    </option>
+                  <select class="form-select" id="cleaningFrequency" required>
+                    <option value="" disabled selected>Choose how often</option>
                     <option>Daily</option>
                     <option>Weekly</option>
                     <option>Fortnightly</option>
@@ -589,25 +583,25 @@
 
                 <!-- Preferred Date & Time -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimateDate" class="form-label"
+                  <label for="preferredDateTime" class="form-label"
                     >Preferred Date & Time</label
                   >
                   <input
                     type="datetime-local"
                     class="form-control"
-                    id="estimateDate"
+                    id="preferredDateTime"
                     required
                   />
                 </div>
               </div>
 
               <div class="row">
-                <!-- Service Type -->
+                <!-- Services Required -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimateService" class="form-label"
+                  <label for="servicesRequired" class="form-label"
                     >Services Required (tick all that apply):</label
                   >
-                  <select class="form-select" id="estimateService" required>
+                  <select class="form-select" id="servicesRequired" required>
                     <option value="" disabled selected>Choose a service</option>
                     <option>General Cleaning (dusting, vacuuming, bins)</option>
                     <option>Floor Cleaning (mopping, polishing)</option>
@@ -620,26 +614,29 @@
                   </select>
                 </div>
 
+                <!-- Free Site Visit -->
                 <div class="col-md-6 mb-3">
-                  <label for="estimateService" class="form-label"
+                  <label for="freeSiteVisit" class="form-label"
                     >Would you like a free site visit and quote?</label
                   >
-                  <select class="form-select" id="estimateService" required>
-                    <option value="" disabled selected>Choose your answer</option>
+                  <select class="form-select" id="freeSiteVisit" required>
+                    <option value="" disabled selected>
+                      Choose your answer
+                    </option>
                     <option>Yes</option>
                     <option>No</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Special Requests -->
+              <!-- Additional Notes -->
               <div class="mb-3">
-                <label for="estimateRequests" class="form-label"
+                <label for="additionalNotes" class="form-label"
                   >Additional Notes or Specific Requirements:</label
                 >
                 <textarea
                   class="form-control"
-                  id="estimateRequests"
+                  id="additionalNotes"
                   rows="3"
                   placeholder="Additional instructions"
                 ></textarea>
@@ -647,7 +644,7 @@
 
               <!-- Submit Button -->
               <button type="submit" class="btn btn-primary w-100 py-2">
-                Submit 
+                Submit
               </button>
             </form>
           </div>
@@ -1774,5 +1771,32 @@
 
     <script src="js/main.js"></script>
     <script src="js/script.js"></script>
+    <script>
+      document
+        .getElementById("estimateForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const data = {
+            businessName: document.getElementById("businessName").value,
+            contactPerson: document.getElementById("contactPerson").value,
+            phoneNumber: document.getElementById("phoneNumber").value,
+            emailAddress: document.getElementById("emailAddress").value,
+            businessAddress: document.getElementById("businessAddress").value,
+            approxSize: document.getElementById("approxSize").value,
+            numRooms: document.getElementById("numRooms").value,
+            premisesType: document.getElementById("premisesType").value,
+            cleaningFrequency:
+              document.getElementById("cleaningFrequency").value,
+            preferredDateTime:
+              document.getElementById("preferredDateTime").value,
+            servicesRequired: document.getElementById("servicesRequired").value,
+            freeSiteVisit: document.getElementById("freeSiteVisit").value,
+            additionalNotes: document.getElementById("additionalNotes").value,
+          };
+
+          console.log(data);
+        });
+    </script>
   </body>
 </html>

@@ -450,88 +450,90 @@
                             />
                           </div>
                           <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label"
+                            <label for="emailLabel" class="form-label"
                               >Email Address *</label
                             >
                             <input
                               type="email"
                               class="form-control"
-                              name="email"
-                              id="email"
+                              name="emailLabel"
+                              id="emailLabel"
                               required
                             />
                           </div>
                         </div>
                         <div class="row">
                           <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label"
+                            <label for="phoneLabel" class="form-label"
                               >Phone Number *</label
                             >
                             <input
                               type="tel"
                               class="form-control"
-                              name="phone"
-                              id="phone"
+                              name="phoneLabel"
+                              id="phoneLabel"
                               required
                             />
                           </div>
                           <div class="col-md-6 mb-3">
-                            <label for="alternatePhone" class="form-label"
+                            <label for="alternatePhoneLabel" class="form-label"
                               >Alternate Phone</label
                             >
                             <input
                               type="tel"
                               class="form-control"
-                              name="alternatePhone"
-                              id="alternatePhone"
+                              name="alternatePhoneLabel"
+                              id="alternatePhoneLabel"
                             />
                           </div>
                         </div>
                         <h5 class="mt-4 mb-3">Address Information</h5>
                         <div class="mb-3">
-                          <label for="address" class="form-label"
+                          <label for="addressLabel" class="form-label"
                             >Address *</label
                           >
                           <textarea
                             class="form-control"
-                            name="address"
-                            id="address"
+                            name="addressLabel"
+                            id="addressLabel"
                             rows="2"
                             required
                           ></textarea>
                         </div>
                         <div class="row">
                           <div class="col-md-4 mb-3">
-                            <label for="postcode" class="form-label"
+                            <label for="postcodeLabel" class="form-label"
                               >Postcode *</label
                             >
                             <input
                               type="text"
                               class="form-control"
-                              name="postcode"
-                              id="postcode"
+                              name="postcodeLabel"
+                              id="postcodeLabel"
                               required
                             />
                           </div>
                           <div class="col-md-4 mb-3">
-                            <label for="city" class="form-label">City *</label>
+                            <label for="cityLabel" class="form-label"
+                              >City *</label
+                            >
                             <input
                               type="text"
                               class="form-control"
-                              name="city"
-                              id="city"
+                              name="cityLabel"
+                              id="cityLabel"
                               required
                             />
                           </div>
                           <div class="col-md-4 mb-3">
-                            <label for="country" class="form-label"
+                            <label for="countryLabel" class="form-label"
                               >Country *</label
                             >
                             <input
                               type="text"
                               class="form-control"
-                              name="country"
-                              id="country"
+                              name="countryLabel"
+                              id="countryLabel"
                               required
                             />
                           </div>
@@ -542,8 +544,8 @@
                           >
                           <textarea
                             class="form-control"
-                            name="regularNotes"
-                            id="regularNotes"
+                            name="regularNotesLabel"
+                            id="regularNotesLabel"
                             rows="3"
                             required
                           ></textarea>
@@ -1300,8 +1302,12 @@
             }
           }
 
-          // Also log the pending form data for debugging
-          console.log("Pending Form Data:", window.pendingFormData);
+          // Store in localStorage
+          localStorage.setItem(
+            "bookingDetails",
+            JSON.stringify(window.pendingFormData)
+          );
+          console.log("Booking details stored:", window.pendingFormData);
         }
       }
 
@@ -1310,16 +1316,32 @@
           `.payment-option[onclick*="${paymentMethod}"]`
         );
         let originalText = button ? button.innerHTML : "";
-        // Get selected room size
-        const roomSize =
-          document.querySelector('input[name="roomSize"]:checked')?.value ||
-          document.querySelector('select[name="roomSize"]')?.value ||
-          "1-2";
 
-        // Set selected amount based on room size
-        let selectedAmount = 50.0;
-        if (roomSize === "3-4") selectedAmount = 100.0;
-        else if (roomSize === "5+") selectedAmount = 150.0;
+        // Get service type (one-off or regular)
+        const isRegular =
+          document.getElementById("regularSection").style.display === "block";
+
+        // Get selected room size and frequency
+        const roomSize = isRegular
+          ? document.getElementById("regularRoomSize")?.value || "1-2"
+          : document.querySelector('input[name="roomSize"]:checked')?.value ||
+            "1-2";
+
+        const frequency = isRegular
+          ? document.getElementById("regularFrequency")?.value || "weekly"
+          : "one-off";
+
+        // Calculate amount based on service type and frequency
+        let selectedAmount = 0;
+        if (isRegular) {
+          // Use regular cleaning pricing based on frequency
+          selectedAmount = frequency === "weekly" ? 13.5 : 15.0;
+        } else {
+          // Use one-off cleaning pricing based on room size
+          if (roomSize === "3-4") selectedAmount = 100.0;
+          else if (roomSize === "5+") selectedAmount = 150.0;
+          else selectedAmount = 50.0; // Default for 1-2 rooms
+        }
 
         // Update displayed price (sync UI and logic)
         const priceElement = document.getElementById("totalPrice");
@@ -1327,22 +1349,37 @@
           priceElement.textContent = `£${selectedAmount.toFixed(2)}`;
         }
 
-        const serviceType =
-          document.getElementById("serviceType")?.textContent || "One-Off";
-        const houseSize =
-          document.getElementById("houseSize")?.textContent || roomSize;
+        const serviceType = isRegular ? "Regular Cleaning" : "One-Off Cleaning";
+        const houseSize = `${roomSize} ${
+          roomSize.includes("+") ? "Rooms" : "Rooms"
+        }`;
         const priceRange =
           document.getElementById("priceRange")?.textContent || "";
-
-        const amount = selectedAmount; // ✅ unified usage
 
         window.pendingFormData = {
           serviceType,
           houseSize,
+          frequency: isRegular
+            ? frequency === "weekly"
+              ? "Weekly/Bi-Weekly"
+              : "Monthly"
+            : "N/A",
           priceRange,
           totalPrice: `£${selectedAmount.toFixed(2)}`,
+          customerName: document.getElementById("name")?.value || "N/A",
+          email: document.getElementById("emailLabel")?.value || "N/A",
+          phone: document.getElementById("phoneLabel")?.value || "N/A",
+          address: document.getElementById("addressLabel")?.value || "N/A",
+          postcode: document.getElementById("postcodeLabel")?.value || "N/A",
+          city: document.getElementById("cityLabel")?.value || "N/A",
+          country: document.getElementById("countryLabel")?.value || "N/A",
+          preferredDate: isRegular
+            ? document.getElementById("regularDate")?.value || "N/A"
+            : document.getElementById("oneOffDate")?.value || "N/A",
+          preferredTime: isRegular
+            ? document.getElementById("regularTime")?.value || "N/A"
+            : document.getElementById("oneOffTime")?.value || "N/A",
         };
-        console.log(window.pendingFormData.totalPrice);
 
         try {
           if (button) {
@@ -1754,7 +1791,7 @@
               bookingDetails.totalPrice.replace(/[^0-9.]/g, "")
             );
 
-            console.log("PayPal Amount Being Sent:", amount); // ✅ Debug check
+            console.log("PayPal Amount Being Sent:", amount); // Debug check
 
             const modalBody = document.querySelector(
               "#paymentModal .modal-body"

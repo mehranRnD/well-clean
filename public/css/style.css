@@ -1314,6 +1314,47 @@ input[type="file"] {
 .is-invalid ~ .invalid-feedback {
   display: block;
 }
+/* Base optional tweak */
+.payment-option {
+  transition: all 0.3s ease;
+}
+
+/* Tablet and below: stack vertically */
+@media (max-width: 992px) {
+  .d-flex.justify-content-center.align-items-center.gap-4 {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .payment-option {
+    width: 80% !important;
+    max-width: 300px !important;
+    padding: 20px 20px !important;
+  }
+}
+
+/* Mobile: tighter width */
+@media (max-width: 768px) {
+  .payment-option {
+    width: 85% !important;
+    max-width: 280px !important;
+    padding: 18px 18px !important;
+  }
+}
+
+/* Very small screens: even tighter */
+@media (max-width: 480px) {
+  .payment-option {
+    width: 90% !important;
+    padding: 16px 16px !important;
+  }
+
+  .img-fluid {
+    max-width: 100px !important;
+  }
+}
+
+
 @media (max-width: 768px) {
   .cleaning-service-tabs {
     flex-wrap: wrap;
